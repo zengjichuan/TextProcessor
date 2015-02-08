@@ -4,19 +4,15 @@ import re
 import os
 import os.path
 import platform
+import json
 
 def runJmx(srcFile, destFile):
-    # implement MxTerminator (java version) in Windows
-    oss = platform.system()
-    if oss=='Windows':
-        os.system('java -cp jmx/mxpost.jar eos.TestEOS jmx/eos.project < ' + srcFile + ' > ' + destFile)
-    elif oss=='Linux':
-        print 'linux'
-    elif oss=='Darwin':
-        print 'Mac'
+    # implement MxTerminator (java version)
+    os.system('java -cp jmx/mxpost.jar eos.TestEOS jmx/eos.project < ' + srcFile + ' > ' + destFile)
+
 
 def getWordFreqDict(originalstr):
-    L = re.split('\W+',originalstr)
+    L = re.split('\W+',originalstr)     # non-character
     freqDict = {}
     for e in L:
         # deal with digits
@@ -55,7 +51,8 @@ if __name__ == '__main__':
         srcFiles = os.listdir(sys.argv[2]+'/'+'sen')
         srcFiles = map(lambda f:sys.argv[2]+'/sen/'+f, srcFiles)
 
-    # fout = open(destFile,'a')
+
+    fout = open(destFile,'w')
     for srcFile in srcFiles:
         if os.path.isdir(srcFile):
             continue
@@ -63,5 +60,11 @@ if __name__ == '__main__':
         fin = open (srcFile,'r')
 
         sen_cnt = 0
+        output_dict ={}
+        for sentence in fin:
+            output_dict['s_'+str(sen_cnt)] = getWordFreqDict(sentence)
+            sen_cnt += 1
+        fin.close()
 
-
+        fout.write(os.path.basename(srcFile)+' '+json.dumps(output_dict)+'\n')
+    fout.close()
